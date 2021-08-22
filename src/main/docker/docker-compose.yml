@@ -1,0 +1,34 @@
+version: '3.7'
+services:
+  topsymbols:
+    build:
+      context: ../../../
+      dockerfile: ./src/main/docker/Dockerfile.jvm
+    image: topsymbols
+    container_name: topsymbols
+    depends_on:
+      - postgres
+    ports:
+      - 8080:8080
+  prometheus:
+    image: prom/prometheus:latest
+    container_name: prometheus
+    depends_on:
+      - topsymbols
+    ports:
+      - 9090:9090
+    command:
+      - --config.file=/etc/prometheus/prometheus.yml
+    volumes:
+      - ./prometheus.yml:/etc/prometheus/prometheus.yml:ro
+  postgres:
+    image:  postgres:13.1
+    container_name: postgres
+    volumes:
+      - .postgres/data:/var/lib/postgresql/data
+    ports:
+      - 5432:5432
+    environment:
+      POSTGRES_USER : "topsymbol"
+      POSTGRES_PASSWORD : "topsymbol"
+      POSTGRES_DB : "topsymbol_db"
