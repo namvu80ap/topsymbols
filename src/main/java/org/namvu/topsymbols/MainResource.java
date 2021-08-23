@@ -4,18 +4,24 @@ import io.micrometer.core.instrument.Gauge;
 import io.micrometer.core.instrument.MeterRegistry;
 import io.micrometer.core.instrument.search.MeterNotFoundException;
 import io.quarkus.scheduler.Scheduled;
+import io.smallrye.mutiny.Multi;
 import io.smallrye.mutiny.Uni;
 import io.smallrye.mutiny.infrastructure.Infrastructure;
+import io.vertx.core.json.Json;
+import io.vertx.core.json.JsonArray;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 import org.jboss.logging.Logger;
+import org.jboss.resteasy.reactive.RestPath;
 import org.namvu.topsymbols.model.*;
 
 import javax.inject.Inject;
 import javax.ws.rs.GET;
 import javax.ws.rs.Path;
 import javax.ws.rs.Produces;
+import javax.ws.rs.core.MediaType;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 
@@ -37,14 +43,6 @@ public class MainResource {
   public MainResource(Vertx vertx) {
     this.vertx = vertx;
     this.clientTasks = WebClient.create(vertx);
-  }
-
-  @GET
-  @Path("/findAll")
-  @Produces("application/json")
-  public Uni<List<String>> getListMarginPair(){
-    return Uni.createFrom().item(() -> topSymbolServices.findAllSymbol())
-                    .runSubscriptionOn(Infrastructure.getDefaultWorkerPool());
   }
 
   @GET
@@ -84,7 +82,7 @@ public class MainResource {
 
   @Scheduled(every = "{cron.expr.every_ten_seconds}")
   public void topSymbolMeter(){
-      log.info("Scheduled topSymbolMeter run ... ");
+      log.debug("Scheduled topSymbolMeter run ...  ");
       List<TopTradeCountPriceSpread> currentPriceSpreadList = topSymbolServices.findTopTradeCountPriceSpread("USDT", 5);
       if(priceSpreadList.size()==0) priceSpreadList = currentPriceSpreadList;
 
@@ -104,11 +102,11 @@ public class MainResource {
       });
   }
 
-//  @GET
-//  @Path("/{name}")
-//  public String sayHello(@PathParam(value = "name") String name) {
-//    registry.counter("greeting_counter", Tags.of("name", name)).increment();
-//    return "Hello!";
-//  }
+  @GET
+  @Produces(MediaType.SERVER_SENT_EVENTS)
+  @Path("/streaming")
+  public Multi<String> streamTopPriceSpread(@RestPath String name) {
+    return vertx.periodicStream(10000).toMulti().map( l -> Json.encode(priceSpreadList));
+  }
 
 }

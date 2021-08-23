@@ -1,5 +1,6 @@
 package org.namvu.topsymbols;
 
+import io.vertx.core.json.Json;
 import io.vertx.mutiny.core.Vertx;
 import io.vertx.mutiny.ext.web.client.WebClient;
 import io.vertx.mutiny.ext.web.codec.BodyCodec;
@@ -80,18 +81,18 @@ public class TopSymbolServices {
       return topTradeCountList;
     }
 
-  public List<TopTradeCountPriceSpread> findTopTradeCountPriceSpread(String quoteAsset, int limit ){
-    Pageable pageable = PageRequest.of(0,limit);
-    List<Ticker24hr> list = ticker24hrRepository.findTopTradeCount(quoteAsset, pageable);
-    List<TopTradeCountPriceSpread> topTradeCountPriceSpreads = new ArrayList<TopTradeCountPriceSpread>();
-    for (Ticker24hr ticker24hr : list) {
-      TopTradeCountPriceSpread topTradeCountPriceSpread = new TopTradeCountPriceSpread();
-      topTradeCountPriceSpread.symbol = ticker24hr.getSymbol();
-      topTradeCountPriceSpread.priceSpread = String.format("%.8f",ticker24hr.getPriceChange());
-      topTradeCountPriceSpreads.add(topTradeCountPriceSpread);
+    public List<TopTradeCountPriceSpread> findTopTradeCountPriceSpread(String quoteAsset, int limit ){
+      Pageable pageable = PageRequest.of(0,limit);
+      List<Ticker24hr> list = ticker24hrRepository.findTopTradeCount(quoteAsset, pageable);
+      List<TopTradeCountPriceSpread> topTradeCountPriceSpreads = new ArrayList<TopTradeCountPriceSpread>();
+      for (Ticker24hr ticker24hr : list) {
+        TopTradeCountPriceSpread topTradeCountPriceSpread = new TopTradeCountPriceSpread();
+        topTradeCountPriceSpread.symbol = ticker24hr.getSymbol();
+        topTradeCountPriceSpread.priceSpread = String.format("%.8f",ticker24hr.getPriceChange());
+        topTradeCountPriceSpreads.add(topTradeCountPriceSpread);
+      }
+      return topTradeCountPriceSpreads;
     }
-    return topTradeCountPriceSpreads;
-  }
 
     public List<String> findAllSymbol(){
       return marginPairRepository.findAllSymbol();
@@ -145,6 +146,5 @@ public class TopSymbolServices {
       }
       return depthBidsAsksList;
     }
-
 
 }

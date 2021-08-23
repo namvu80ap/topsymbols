@@ -1,0 +1,19 @@
+<H1>Question 5</H1>
+
+<div id="main"></div>
+<script language="JavaScript">
+  const streaming = new EventSource("/app/streaming")
+  const main = document.getElementById("main")
+  streaming.addEventListener('message', function(e) {
+    console.log("On Message ...")
+    console.log(e.data);
+    console.log("On Message ...")
+    console.log(e.data)
+    let divData = e.data
+    let newDiv  = document.createElement("div")
+    main.appendChild(newDiv)
+    newDiv.innerHTML="<p><em>"+divData+"<em></p>"
+  }, false);
+
+
+</script>
