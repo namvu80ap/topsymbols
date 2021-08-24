@@ -11,6 +11,7 @@ import org.namvu.topsymbols.model.MarginPair;
 import org.namvu.topsymbols.model.Ticker24hr;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -51,17 +52,22 @@ public class PeriodicTasks {
       .send()
       .subscribeAsCompletionStage()
       .thenApply( body -> {
-        ArrayList<MarginPair> list = new ArrayList<MarginPair>();
-        JsonArray jsonArray = body.body();
-        log.debugf("AllPair jsonArray size: %d", jsonArray.size());
-        for (int i = 0; i < jsonArray.size(); i++) {
-          MarginPair marginPair = jsonArray.getJsonObject(i).mapTo(MarginPair.class);
-          if( "BTC".equalsIgnoreCase(marginPair.getQuote()) ||
+        if(body.statusCode()==Response.Status.OK.getStatusCode()){
+          ArrayList<MarginPair> list = new ArrayList<MarginPair>();
+          JsonArray jsonArray = body.body();
+          log.debugf("AllPair jsonArray size: %d", jsonArray.size());
+          for (int i = 0; i < jsonArray.size(); i++) {
+            MarginPair marginPair = jsonArray.getJsonObject(i).mapTo(MarginPair.class);
+            if( "BTC".equalsIgnoreCase(marginPair.getQuote()) ||
               "USDT".equalsIgnoreCase(marginPair.getQuote())) {
-            list.add(marginPair);
+              list.add(marginPair);
+            }
           }
+          return list;
+        } else {
+          log.errorf("External API error: %d Message: %s", body.statusCode(), body.statusMessage());
+          return new ArrayList<MarginPair>();
         }
-        return list;
       }).join();
     log.debugf("AllPair list size: %d", marginPairList.size());
     topSymbolServices.upsertAllMarginPair(marginPairList);
@@ -77,15 +83,20 @@ public class PeriodicTasks {
       .send()
       .subscribeAsCompletionStage()
       .thenApply( body -> {
-        ArrayList<Ticker24hr> list = new ArrayList<Ticker24hr>();
-        JsonArray jsonArray = body.body();
-        for (int i = 0; i < jsonArray.size(); i++) {
-          Ticker24hr ticker24hr = jsonArray.getJsonObject(i).mapTo(Ticker24hr.class);
-          if( symbols.contains(ticker24hr.getSymbol()) )
-            list.add(ticker24hr);
+        if(body.statusCode()== Response.Status.OK.getStatusCode()) {
+          ArrayList<Ticker24hr> list = new ArrayList<Ticker24hr>();
+          JsonArray jsonArray = body.body();
+          for (int i = 0; i < jsonArray.size(); i++) {
+            Ticker24hr ticker24hr = jsonArray.getJsonObject(i).mapTo(Ticker24hr.class);
+            if (symbols.contains(ticker24hr.getSymbol()))
+              list.add(ticker24hr);
+          }
+          return list;
+        } else {
+          log.errorf("External API error: %d Message: %s", body.statusCode(), body.statusMessage());
+          return new ArrayList<Ticker24hr>();
         }
-        return list;
-      }).join(); //TODO - Handler Exception
+      }).join();
     log.debugf("Ticker24hr list size: %d", ticker24hrList.size());
     topSymbolServices.upsertTicker24hr(ticker24hrList);
   }

@@ -94,7 +94,7 @@ public class MainResource {
         try {
           registry.get("topsymbol.price.spread." + priceSpread.symbol).gauge();
         } catch ( MeterNotFoundException ex) {
-          log.info("MeterNotFoundException : " + ex.getMessage());
+          log.debug("MeterNotFoundException : " + ex.getMessage());
           Gauge.builder("topsymbol.price.spread." + priceSpread.symbol, priceSpread,
               topPriceSpread -> Double.parseDouble(topPriceSpread.priceSpread))
             .register(registry);

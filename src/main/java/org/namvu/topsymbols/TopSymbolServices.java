@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import javax.enterprise.context.ApplicationScoped;
 import javax.inject.Inject;
 import javax.transaction.Transactional;
+import javax.ws.rs.core.Response;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
@@ -134,13 +135,18 @@ public class TopSymbolServices {
           .send()
           .subscribeAsCompletionStage()
           .thenApply(body -> {
-            DepthBidsAsks item = body.body();
-            item.getBids().subList(200, 500).clear();
-            item.getAsks().subList(200, 500).clear();
-            item.setSymbol(topSymbol.symbol);
-            log.debugf("Bids size: %d  Asks size: %d", item.getBids().size(), item.getAsks().size());
-            return item;
-          }); //TODO - Handler Exception
+            if(body.statusCode() == Response.Status.OK.getStatusCode()){
+              DepthBidsAsks item = body.body();
+              item.getBids().subList(200, 500).clear();
+              item.getAsks().subList(200, 500).clear();
+              item.setSymbol(topSymbol.symbol);
+              log.debugf("Bids size: %d  Asks size: %d", item.getBids().size(), item.getAsks().size());
+              return item;
+            } else {
+              log.errorf("External API error: %d Message: %s", body.statusCode(), body.statusMessage());
+              return new DepthBidsAsks();
+            }
+          });
         CompletableFuture.allOf(depthBidsAsksCompletableFuture).join();
         depthBidsAsksList.add(depthBidsAsksCompletableFuture.join());
       }

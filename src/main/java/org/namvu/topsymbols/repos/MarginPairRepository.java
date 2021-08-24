@@ -7,6 +7,7 @@ import org.springframework.data.repository.CrudRepository;
 
 import java.util.List;
 
+//TODO - Change me to use reactive
 public interface MarginPairRepository extends CrudRepository<MarginPair, Long> {
   @Query("SELECT t.symbol FROM MarginPair t")
   List<String> findAllSymbol();
