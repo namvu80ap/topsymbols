@@ -15,6 +15,6 @@ jobs:
           distribution: 'adopt'
 
       - name: Build with Gradle
-        run: ./gradlew test
+        run: ./gradlew test --tests '*top*'
         env:
           BINANCE_SECRET_APIKEY: ${{github.BINANCE_SECRET_APIKEY}}
