@@ -14,4 +14,4 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew test
         env:
-          BINANCE_SECRET_APIKEY=${{github.BINANCE_SECRET_APIKEY}}
+          BINANCE_SECRET_APIKEY: ${{github.BINANCE_SECRET_APIKEY}}
