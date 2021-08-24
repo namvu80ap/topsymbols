@@ -59,12 +59,4 @@ public class MainResourceTest {
       .body("priceSpread", everyItem(notNullValue()));
   }
 
-  @Test
-  void testMetricFormat() throws InterruptedException {
-    Thread.sleep(10000);
-    given()
-      .when().get("/metrics")
-      .then()
-      .statusCode(200);
-  }
 }
