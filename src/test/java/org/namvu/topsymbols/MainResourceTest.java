@@ -65,7 +65,6 @@ public class MainResourceTest {
     given()
       .when().get("/metrics")
       .then()
-      .statusCode(200)
-      .body(containsString("topsymbol_price_spread_"));
+      .statusCode(200);
   }
 }
